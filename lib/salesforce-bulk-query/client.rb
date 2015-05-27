@@ -61,12 +61,6 @@ module SalesforceBulkQuery
       "#{@connection.instance_url}/services/async/#{API_VERSION}#{url}"
     end
 
-    def request_headers2
-      headers = Hash.new
-      headers["X-SFDC-Session"] = @connection.session_id + "34"
-      headers
-    end
-
     def request_headers
       headers = Hash.new
       headers["X-SFDC-Session"] = @connection.session_id
