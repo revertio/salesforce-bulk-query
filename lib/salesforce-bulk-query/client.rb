@@ -70,7 +70,7 @@ module SalesforceBulkQuery
         if code == "InvalidSessionId"
           raise AuthorizationError.new message
         else
-          raise GeneralError.new message
+          raise TransmissionError.new message
         end
       end
 
