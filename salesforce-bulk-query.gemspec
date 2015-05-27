@@ -26,4 +26,5 @@ Gem::Specification.new do |spec|
   spec.add_dependency 'oauth2', '~> 0.9.3'
   spec.add_dependency 'addressable', '~>2.3.4'
   spec.add_dependency 'nokogiri', '~> 1.6.2.1'
+  spec.add_dependency 'retriable', '~> 1.4'
 end

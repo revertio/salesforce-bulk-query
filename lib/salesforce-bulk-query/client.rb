@@ -1,6 +1,5 @@
 require 'httparty'
-require 'salesforce-bulk-query/job'
-require 'salesforce-bulk-query/connection'
+require 'retriable'
 
 module SalesforceBulkQuery
   class Client
@@ -22,16 +21,38 @@ module SalesforceBulkQuery
     def post(url, payload, options={})
       headers = options[:headers] || {}
 
-      options = {
-        body: payload,
-        headers: request_headers.merge(headers)
-      }
+      retriable do
 
-      self.class.post(service_url(url), options).body
+        options = {
+          body: payload,
+          headers: request_headers.merge(headers)
+        }
+
+        response = self.class.post(service_url(url), options)
+        parse_for_errors response.body
+      end
     end
 
     def get(url)
-      self.class.get(service_url(url), { headers: request_headers }).body
+      retriable do
+        response = self.class.get(service_url(url), { headers: request_headers })
+        parse_for_errors response.body
+      end
+    end
+
+    def retriable
+      do_this_on_each_retry = -> (exception, tries) do
+        if exception.is_a? AuthorizationError
+            # If its an auth error attempt to reauth
+            @connection.authorize!
+        end
+      end
+
+      ::Retriable.retriable tries: 4,
+        interval: -> (n) { n ** 2.5},
+        on_retry: do_this_on_each_retry do
+          yield
+        end
     end
 
     private
@@ -40,11 +61,37 @@ module SalesforceBulkQuery
       "#{@connection.instance_url}/services/async/#{API_VERSION}#{url}"
     end
 
+    def request_headers2
+      headers = Hash.new
+      headers["X-SFDC-Session"] = @connection.session_id + "34"
+      headers
+    end
+
     def request_headers
       headers = Hash.new
       headers["X-SFDC-Session"] = @connection.session_id
       headers
     end
 
+    def parse_for_errors(response)
+      body = Nokogiri::XML response
+
+      errors = body.css("error")
+
+      unless errors.empty?
+        code = errors.css("exceptionCode").text
+        message = errors.css("exceptionMessage").text
+
+        if code == "InvalidSessionId"
+          raise AuthorizationError.new(message)
+        else
+          raise GeneralError.new(message)
+        end
+      end
+
+      response
+    end
+
   end
+
 end

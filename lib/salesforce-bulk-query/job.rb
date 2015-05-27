@@ -20,10 +20,10 @@ module SalesforceBulkQuery
       xml << "<contentType>CSV</contentType>"
       xml << "</jobInfo>"
 
-      res = @client.post("/job", xml, headers: {"Content-Type" => "application/xml; charset=UTF-8"})
+      response = @client.post("/job", xml, headers: {"Content-Type" => "application/xml; charset=UTF-8"})
 
-      doc = Nokogiri::XML res
-      @id = doc.css("id").text
+      body = Nokogiri::XML response
+      @id = body.css("id").text
     end
 
     def execute(query)
