@@ -74,7 +74,8 @@ module SalesforceBulkQuery
     end
 
     def records
-      @client.get("/job/#{@job_id}/batch/#{@batch_id}/result/#{@result_id}")
+      response = @client.get("/job/#{@job_id}/batch/#{@batch_id}/result/#{@result_id}")
+      response["queryResult"]["records"]
     end
   end
 
