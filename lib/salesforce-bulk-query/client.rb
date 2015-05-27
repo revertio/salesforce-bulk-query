@@ -74,9 +74,9 @@ module SalesforceBulkQuery
         message = errors.css("exceptionMessage").text
 
         if code == "InvalidSessionId"
-          raise AuthorizationError.new(message)
+          raise AuthorizationError.new message
         else
-          raise GeneralError.new(message)
+          raise GeneralError.new message
         end
       end
 

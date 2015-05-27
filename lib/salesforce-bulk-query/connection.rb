@@ -25,7 +25,7 @@ module SalesforceBulkQuery
 
       @token = access_token.refresh!
     rescue OAuth2::Error => e
-      raise AuthorizationError.new(e)
+      raise AuthorizationError.new e
     end
 
     private
