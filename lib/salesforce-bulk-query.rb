@@ -1,7 +1,6 @@
 require 'httparty'
 require 'retriable'
 require 'oauth2'
-require 'nokogiri'
 
 require 'salesforce-bulk-query/version'
 require 'salesforce-bulk-query/client'

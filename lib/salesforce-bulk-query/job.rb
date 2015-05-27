@@ -15,20 +15,18 @@ module SalesforceBulkQuery
       xml << "<operation>query</operation>"
       xml << "<object>#{object_type}</object>"
       xml << "<concurrencyMode>Parallel</concurrencyMode>"
-      xml << "<contentType>CSV</contentType>"
+      xml << "<contentType>XML</contentType>"
       xml << "</jobInfo>"
 
       response = @client.post("/job", xml, headers: {"Content-Type" => "application/xml; charset=UTF-8"})
 
-      doc = Nokogiri::XML response
-      @id = doc.css("id").text
+      @id = response["jobInfo"]["id"]
     end
 
     def execute(query)
-      response = @client.post("/job/#{id}/batch", query, headers: {"Content-Type" => "text/csv; charset=UTF-8"})
+      response = @client.post("/job/#{id}/batch", query, headers: {"Content-Type" => "application/xml; charset=UTF-8"})
 
-      doc = Nokogiri::XML response
-      @batch_id = doc.css("id").text
+      @batch_id = response["batchInfo"]["id"]
 
       loop do
         if job_completed
@@ -41,13 +39,12 @@ module SalesforceBulkQuery
 
     def job_completed
       response = @client.get("/job/#{id}/batch/#{@batch_id}")
-      doc = Nokogiri::XML response
 
-      case doc.css("state").text
+      case response["batchInfo"]["state"]
         when "Completed"
           return true
         when "Failed"
-          raise JobError.new doc.css("stateMessage").text
+          raise JobError.new response["batchInfo"]["stateMessage"]
         else
           return false
       end
@@ -56,12 +53,12 @@ module SalesforceBulkQuery
     def results
       response = @client.get("/job/#{id}/batch/#{@batch_id}/result")
 
-      doc = Nokogiri::XML response
-      doc.css("result").collect {|result| JobResult.new(@client, id, @batch_id, result.text)}
-    end
+      results = []
+      results << response["result_list"]["result"]
 
-    def get_result(result_id)
-      @client.get("/job/#{id}/batch/#{@batch_id}/result/#{result_id}")
+      results.flatten.map do |result_id|
+        JobResult.new(@client, id, @batch_id, result_id)
+      end
     end
 
   end
@@ -77,8 +74,7 @@ module SalesforceBulkQuery
     end
 
     def records
-      res = @client.get("/job/#{@job_id}/batch/#{@batch_id}/result/#{@result_id}")
-      CSV.parse(res, headers: true)
+      @client.get("/job/#{@job_id}/batch/#{@batch_id}/result/#{@result_id}")
     end
   end
 

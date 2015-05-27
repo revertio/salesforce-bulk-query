@@ -24,14 +24,14 @@ module SalesforceBulkQuery
         }
 
         response = self.class.post(service_url(url), options)
-        parse_for_errors response.body
+        parse_for_errors response.parsed_response
       end
     end
 
     def get(url)
       retriable do
         response = self.class.get(service_url(url), { headers: request_headers })
-        parse_for_errors response.body
+        parse_for_errors response.parsed_response
       end
     end
 
@@ -63,12 +63,9 @@ module SalesforceBulkQuery
     end
 
     def parse_for_errors(response)
-      doc = Nokogiri::XML response
-      errors = doc.css("error")
-
-      unless errors.empty?
-        code = errors.css("exceptionCode").text
-        message = errors.css("exceptionMessage").text
+      if response.has_key? "error"
+        code = response["error"]["exceptionCode"]
+        message = response["error"]["exceptionMessage"]
 
         if code == "InvalidSessionId"
           raise AuthorizationError.new message
