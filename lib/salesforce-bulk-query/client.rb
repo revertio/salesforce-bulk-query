@@ -14,15 +14,13 @@ module SalesforceBulkQuery
 
     def query(object_type, query)
       job = SalesforceBulkQuery::Job.new(self, "Contact")
-
-      job.execute("SELECT Id, Name FROM Contact")
+      job.execute(query)
     end
 
     def post(url, payload, options={})
       headers = options[:headers] || {}
 
       retriable do
-
         options = {
           body: payload,
           headers: request_headers.merge(headers)
