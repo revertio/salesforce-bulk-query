@@ -13,7 +13,7 @@ module SalesforceBulkQuery
     end
 
     def query(object_type, query)
-      job = SalesforceBulkQuery::Job.new(self, "Contact")
+      job = SalesforceBulkQuery::Job.new(self, object_type)
       job.execute(query)
     end
 
