@@ -1,9 +1,9 @@
 module SalesforceBulkQuery
 
   #
-  # An exception that is raised if authorization with Salesforce fails
+  # An exception that is raised if we have an unknown error communicating with Salesforce
   #
-  class GeneralError < StandardError
+  class TranmissionError < StandardError
   end
 
   #
@@ -12,5 +12,10 @@ module SalesforceBulkQuery
   class AuthorizationError < StandardError
   end
 
+  #
+  # An exception that is raised if a job fails
+  #
+  class JobError < StandardError
+  end
 
 end

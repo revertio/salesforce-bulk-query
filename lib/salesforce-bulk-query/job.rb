@@ -33,24 +33,26 @@ module SalesforceBulkQuery
       @batch_id = doc.css("id").text
 
       loop do
-        case check_status
-          when "Completed"
-            return results
-
-          when "Failed"
-            raise "Bulk Job Failed Id: #{id}"
-
-          else
-            sleep(2)
+        if job_completed
+          return results
+        else
+          sleep(2)
         end
       end
     end
 
-    def check_status
+    def job_completed
       response = @client.get("/job/#{id}/batch/#{@batch_id}")
-
       doc = Nokogiri::XML response
-      doc.css("state").text
+
+      case doc.css("state").text
+        when "Completed"
+          return true
+        when "Failed"
+          raise JobError.new doc.css("stateMessage").text
+        else
+          return false
+      end
     end
 
     def results
