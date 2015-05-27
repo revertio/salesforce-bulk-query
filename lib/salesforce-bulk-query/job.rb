@@ -22,14 +22,14 @@ module SalesforceBulkQuery
 
       response = @client.post("/job", xml, headers: {"Content-Type" => "application/xml; charset=UTF-8"})
 
-      body = Nokogiri::XML response
-      @id = body.css("id").text
+      doc = Nokogiri::XML response
+      @id = doc.css("id").text
     end
 
     def execute(query)
-      res = @client.post("/job/#{id}/batch", query, headers: {"Content-Type" => "text/csv; charset=UTF-8"})
+      response = @client.post("/job/#{id}/batch", query, headers: {"Content-Type" => "text/csv; charset=UTF-8"})
 
-      doc = Nokogiri::XML res
+      doc = Nokogiri::XML response
       @batch_id = doc.css("id").text
 
       loop do
@@ -47,16 +47,16 @@ module SalesforceBulkQuery
     end
 
     def check_status
-      res = @client.get("/job/#{id}/batch/#{@batch_id}")
+      response = @client.get("/job/#{id}/batch/#{@batch_id}")
 
-      doc = Nokogiri::XML res
+      doc = Nokogiri::XML response
       doc.css("state").text
     end
 
     def results
-      res = @client.get("/job/#{id}/batch/#{@batch_id}/result")
+      response = @client.get("/job/#{id}/batch/#{@batch_id}/result")
 
-      doc = Nokogiri::XML res
+      doc = Nokogiri::XML response
       doc.css("result").collect {|result| JobResult.new(@client, id, @batch_id, result.text)}
     end
 

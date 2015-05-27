@@ -66,9 +66,8 @@ module SalesforceBulkQuery
     end
 
     def parse_for_errors(response)
-      body = Nokogiri::XML response
-
-      errors = body.css("error")
+      doc = Nokogiri::XML response
+      errors = doc.css("error")
 
       unless errors.empty?
         code = errors.css("exceptionCode").text
