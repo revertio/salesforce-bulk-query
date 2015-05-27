@@ -1,6 +1,3 @@
-require 'httparty'
-require 'retriable'
-
 module SalesforceBulkQuery
   class Client
     include HTTParty

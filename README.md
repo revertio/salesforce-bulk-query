@@ -1,6 +1,6 @@
 # Salesforce Bulk Query
 
-TODO: Write a gem description
+This gem only supports running queries against the Salesforce Bulk API. It does not intend to implement the other parts of the Bulk API for uploading data.
 
 ## Installation
 

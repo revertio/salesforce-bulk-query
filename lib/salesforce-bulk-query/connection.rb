@@ -1,5 +1,3 @@
-require 'oauth2'
-
 module SalesforceBulkQuery
   class Connection
 
