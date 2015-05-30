@@ -1,20 +1,26 @@
 module SalesforceBulkQuery
   class Client
-    include HTTParty
+
+    attr_accessor :logger
 
     API_VERSION = "33.0"
 
     def initialize(client_id, client_secret, refresh_token)
+      @logger = Logger.new($stderr)
       @connection = SalesforceBulkQuery::Connection.new(client_id, client_secret, refresh_token)
       @connection.authorize!
     end
 
     def query(object_type, query)
+      logger.debug "[SALESFORCE_BULK_QUERY] QUERY #{object_type} : #{query}"
+
       job = SalesforceBulkQuery::Job.new(self, object_type)
       job.execute(query)
     end
 
     def post(url, payload, options={})
+      logger.debug "[SALESFORCE_BULK_QUERY] POST #{url}"
+
       headers = options[:headers] || {}
 
       retriable do
@@ -23,20 +29,24 @@ module SalesforceBulkQuery
           headers: request_headers.merge(headers)
         }
 
-        response = self.class.post(service_url(url), options)
+        response = HTTParty.post(service_url(url), options)
         parse_for_errors response.parsed_response
       end
     end
 
     def get(url)
+      logger.debug "[SALESFORCE_BULK_QUERY] GET #{url}"
+
       retriable do
-        response = self.class.get(service_url(url), { headers: request_headers })
+        response = HTTParty.get(service_url(url), { headers: request_headers })
         parse_for_errors response.parsed_response
       end
     end
 
     def retriable
       do_this_on_each_retry = -> (exception, tries) do
+        logger.debug "[SALESFORCE_BULK_QUERY] Retry request. Tries: #{tries}"
+
         if exception.is_a? AuthorizationError
             # If its an auth error attempt to reauth
             @connection.authorize!

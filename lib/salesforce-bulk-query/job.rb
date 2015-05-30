@@ -17,6 +17,8 @@ module SalesforceBulkQuery
     end
 
     def create
+      @client.logger.debug "[SALESFORCE_BULK_QUERY] Create Job"
+
       xml =  "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
       xml << "<jobInfo xmlns=\"http://www.force.com/2009/06/asyncapi/dataload\">"
       xml << "<operation>query</operation>"
@@ -31,6 +33,8 @@ module SalesforceBulkQuery
     end
 
     def execute(query)
+      @client.logger.debug "[SALESFORCE_BULK_QUERY] Execute query: #{query}"
+
       require_id
       response = @client.post("/job/#{id}/batch", query, headers: {"Content-Type" => "application/xml; charset=UTF-8"})
 
@@ -50,6 +54,8 @@ module SalesforceBulkQuery
     end
 
     def completed?
+      @client.logger.debug "[SALESFORCE_BULK_QUERY] Check job status job id: #{id}"
+
       require_id && require_batch_id
 
       response = @client.get("/job/#{id}/batch/#{batch_id}")
@@ -68,6 +74,8 @@ module SalesforceBulkQuery
     # Assigns the results to the `results` attribute.
     # Returns the results.
     def get_results
+      @client.logger.debug "[SALESFORCE_BULK_QUERY] Get job results. job id: #{id}"
+
       require_id && require_batch_id
 
       response = @client.get("/job/#{id}/batch/#{batch_id}/result")
@@ -90,22 +98,5 @@ module SalesforceBulkQuery
       end
 
   end
-
-  class JobResult
-    attr_accessor :records
-
-    def initialize(client, job_id, batch_id, result_id)
-      @client = client
-      @job_id = job_id
-      @batch_id = batch_id
-      @result_id = result_id
-    end
-
-    def records
-      response = @client.get("/job/#{@job_id}/batch/#{@batch_id}/result/#{@result_id}")
-      response["queryResult"]["records"]
-    end
-  end
-
 end
 
