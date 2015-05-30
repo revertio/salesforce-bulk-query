@@ -11,7 +11,12 @@ module SalesforceBulkQuery
 
     def records
       response = @client.get("/job/#{@job_id}/batch/#{@batch_id}/result/#{@result_id}")
-      response["queryResult"]["records"]
+
+      unless response["queryResult"].nil?
+        records = response["queryResult"]["records"]
+      end
+
+      records || []
     end
   end
 end
