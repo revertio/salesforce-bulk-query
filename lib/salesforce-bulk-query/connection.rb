@@ -3,11 +3,11 @@ module SalesforceBulkQuery
 
     attr_accessor :instance_url, :session_id
 
-    def initialize(client_id, client_secret, refresh_token)
-      @id = client_id
-      @secret = client_secret
-      @refresh_token = refresh_token
-      @site = "https://login.salesforce.com" # "https://test.salesforce.com" for sandbox
+    def initialize(options={})
+      @id = options[:client_id]
+      @secret = options[:client_secret]
+      @refresh_token = options[:refresh_token]
+      @host = options[:host] || "login.salesforce.com"
     end
 
     def session_id
@@ -29,7 +29,7 @@ module SalesforceBulkQuery
     private
 
     def oauth_client
-      @client ||= OAuth2::Client.new(@id, @secret, site: @site, token_url: "services/oauth2/token?grant_type=refresh_token")
+      @client ||= OAuth2::Client.new(@id, @secret, site: "https://#{@host}", token_url: "services/oauth2/token?grant_type=refresh_token")
     end
 
   end

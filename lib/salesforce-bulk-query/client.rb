@@ -5,9 +5,9 @@ module SalesforceBulkQuery
 
     API_VERSION = "33.0"
 
-    def initialize(client_id, client_secret, refresh_token)
+    def initialize(options={})
       @logger = Logger.new($stderr)
-      @connection = SalesforceBulkQuery::Connection.new(client_id, client_secret, refresh_token)
+      @connection = SalesforceBulkQuery::Connection.new(options)
       @connection.authorize!
     end
 
